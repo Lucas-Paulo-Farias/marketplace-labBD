@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="password" id="senha" placeholder="Senha" required><br>
+        <button type="submit">Entrar</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const msgDiv = document.getElementById('message');
+
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('userGrupo', data.grupo);
+
+                msgDiv.innerText = 'Login com sucesso! Redirecionando...';
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                msgDiv.innerText = `Erro: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

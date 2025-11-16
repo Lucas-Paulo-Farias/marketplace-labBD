@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Marketplace</title>
+    <style>
+        body { font-family: sans-serif; }
+        #produtos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .produto { border: 1px solid #ccc; padding: 10px; border-radius: 5px; }
+        .seller-form { background: #f4f4f4; padding: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Marketplace</h1>
+    <button onclick="logout()">Logout</button>
+    <hr>
+
+    <div id="sellerArea" style="display:none;" class="seller-form">
+        <h3>Painel do Vendedor</h3>
+        <form id="createProductForm">
+            <input type="text" id="nome" placeholder="Nome do Produto" required>
+            <input type="number" id="preco" placeholder="Preço" step="0.01" required>
+            <input type="number" id="estoque" placeholder="Estoque" required>
+            <input type="number" id="categoria_id" placeholder="ID Categoria (ex: 1)" required>
+            <button type="submit">Criar Produto</button>
+        </form>
+        <div id="productMessage"></div>
+    </div>
+
+    <h2>Produtos à Venda</h2>
+    <div id="produtos"></div>
+
+    <script>
+        const token = localStorage.getItem('authToken');
+        const grupo = localStorage.getItem('userGrupo');
+        const produtosDiv = document.getElementById('produtos');
+
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        if (grupo === 'VENDEDOR') {
+            document.getElementById('sellerArea').style.display = 'block';
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch('http://localhost:3000/api/products', {});
+                const produtos = await res.json();
+
+                produtosDiv.innerHTML = '';
+                for (const p of produtos) {
+                    produtosDiv.innerHTML += `
+                        <div class="produto">
+                            <h3>${p.nome}</h3>
+                            <p>R$ ${p.preco}</p>
+                            <p>Vendido por: ${p.vendedor}</p>
+                            <p>Categoria: ${p.categoria}</p>
+                            <p>Estoque: ${p.estoque}</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                produtosDiv.innerHTML = `Erro ao carregar produtos: ${err.message}`;
+            }
+        }
+
+        document.getElementById('createProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgDiv = document.getElementById('productMessage');
+            try {
+                const res = await fetch('http://localhost:3000/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        nome: document.getElementById('nome').value,
+                        preco: document.getElementById('preco').value,
+                        estoque: document.getElementById('estoque').value,
+                        categoria_id: document.getElementById('categoria_id').value,
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                msgDiv.innerText = 'Produto criado! O cache foi invalidado.';
+                loadProducts();
+
+            } catch (err) {
+                msgDiv.innerText = `Erro: ${err.message}`;
+            }
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>
