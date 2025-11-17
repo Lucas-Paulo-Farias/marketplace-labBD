@@ -4,12 +4,12 @@ const productController = require('../controllers/productController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 // Rota pública
-router.get('/produtos', productController.getAllProducts);
+router.get('/', productController.getAllProducts);
 
 // Rota privada
 // Apenas 'VENDEDOR' pode criar produto
 router.post(
-  '/produtos',
+  '/',
   protect,
   authorize('VENDEDOR'),
   productController.createProduct

@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 // Rotas da API
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/produtos', productRoutes);
 app.use('/api/pedidos', orderRoutes);
 
 const PORT = process.env.PORT || 3000;
