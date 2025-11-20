@@ -2,104 +2,84 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Marketplace</title>
+    <title>Loja - Marketplace</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
-        body { font-family: sans-serif; }
-        #produtos { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
-        .produto { border: 1px solid #ccc; padding: 10px; border-radius: 5px; }
-        .seller-form { background: #f4f4f4; padding: 10px; margin-top: 20px; }
+        .qtd-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .qtd-input {
+            width: 70px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <h1>Marketplace</h1>
-    <button onclick="logout()">Logout</button>
-    <hr>
+    <nav id="navbar"></nav>
 
-    <div id="sellerArea" style="display:none;" class="seller-form">
-        <h3>Painel do Vendedor</h3>
-        <form id="createProductForm">
-            <input type="text" id="nome" placeholder="Nome do Produto" required>
-            <input type="number" id="preco" placeholder="Preço" step="0.01" required>
-            <input type="number" id="estoque" placeholder="Estoque" required>
-            <input type="number" id="categoria_id" placeholder="ID Categoria (ex: 1)" required>
-            <button type="submit">Criar Produto</button>
-        </form>
-        <div id="productMessage"></div>
+    <div class="container">
+        <h1>Produtos Disponíveis</h1>
+        <p></p>
+        <div id="loading">Carregando produtos...</div>
+        <div id="produtos" class="grid"></div>
     </div>
 
-    <h2>Produtos à Venda</h2>
-    <div id="produtos"></div>
+    <div id="cart-summary" onclick="checkout()" style="display:none;">🛒 0 itens</div>
 
+    <script src="app.js"></script>
     <script>
-        const token = localStorage.getItem('authToken');
-        const grupo = localStorage.getItem('userGrupo');
-        const produtosDiv = document.getElementById('produtos');
-
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        if (grupo === 'VENDEDOR') {
-            document.getElementById('sellerArea').style.display = 'block';
-        }
+        checkAuth();
+        setupNav();
 
         async function loadProducts() {
             try {
-                const res = await fetch('http://localhost:3000/api/products', {});
+                // Faz a requisição. 1ª vez = Banco, 2ª vez = Redis
+                const res = await fetch(`${API_URL}/produtos`);
                 const produtos = await res.json();
-
+                
+                document.getElementById('loading').style.display = 'none';
+                const produtosDiv = document.getElementById('produtos');
                 produtosDiv.innerHTML = '';
-                for (const p of produtos) {
+
+                produtos.forEach(p => {
                     produtosDiv.innerHTML += `
-                        <div class="produto">
-                            <h3>${p.nome}</h3>
-                            <p>R$ ${p.preco}</p>
-                            <p>Vendido por: ${p.vendedor}</p>
-                            <p>Categoria: ${p.categoria}</p>
-                            <p>Estoque: ${p.estoque}</p>
+                        <div class="product-card">
+                            <div>
+                                <h3>${p.nome}</h3>
+                                <small>${p.categoria} | Vend: ${p.vendedor}</small>
+                                <p>${p.descricao || 'Sem descrição'}</p>
+                            </div>
+                            <div>
+                                <div class="price">R$ ${p.preco}</div>
+                                <small>Estoque: ${p.estoque}</small> <br><br>
+                                ${p.estoque > 0 
+                                    ? `
+                                    <div class="qtd-container">
+                                        <label>Qtd:</label>
+                                        <input type="number" id="qtd-${p.id}" class="qtd-input" value="1" min="1" max="${p.estoque}">
+                                    </div>
+                                    <button onclick='addToCart(${JSON.stringify(p)})'>Adicionar ao Carrinho</button>
+                                    ` 
+                                    : `<button disabled style="background:#ccc">Esgotado</button>`}
+                            </div>
                         </div>
                     `;
-                }
+                });
             } catch (err) {
-                produtosDiv.innerHTML = `Erro ao carregar produtos: ${err.message}`;
+                document.getElementById('loading').innerText = 'Erro ao carregar: ' + err.message;
             }
         }
 
-        document.getElementById('createProductForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const msgDiv = document.getElementById('productMessage');
-            try {
-                const res = await fetch('http://localhost:3000/api/products', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        nome: document.getElementById('nome').value,
-                        preco: document.getElementById('preco').value,
-                        estoque: document.getElementById('estoque').value,
-                        categoria_id: document.getElementById('categoria_id').value,
-                    })
-                });
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
-
-                msgDiv.innerText = 'Produto criado! O cache foi invalidado.';
-                loadProducts();
-
-            } catch (err) {
-                msgDiv.innerText = `Erro: ${err.message}`;
-            }
-        });
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
+        function checkout() {
+            window.location.href = 'carrinho.html';
         }
 
         loadProducts();
+        updateCartUI();
     </script>
 </body>
 </html>

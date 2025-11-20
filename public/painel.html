@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Vendedor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav id="navbar"></nav>
+    <div class="container">
+        <h1>Painel de Gestão</h1>
+
+        <div class="card">
+            <h3>Cadastrar Novo Produto</h3>
+            <form id="createProductForm">
+                <div class="grid">
+                    <input type="text" id="nome" placeholder="Nome do Produto" required>
+                    <textarea id="descricao" placeholder="Descrição detalhada do produto..." rows="4"
+                        required></textarea>
+                </div>
+                <div class="grid">
+                    <input type="number" id="preco" placeholder="Preço" step="0.01" required>
+                    <input type="number" id="estoque" placeholder="Quantidade Estoque" required>
+
+                    <select id="categoria_id" required>
+                        <option value="" disabled selected>Categoria do produto</option>
+                    </select>
+                </div>
+                <button type="submit">Cadastrar Produto</button>
+            </form>
+        </div>
+
+        <h2>Gerenciar Produtos Existentes</h2>
+        <div id="my-products" class="grid"></div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        checkAuth();
+        setupNav();
+        
+        if(getGroup() !== 'VENDEDOR' && getGroup() !== 'ADMIN') {
+            alert('Acesso negado');
+            window.location.href = 'index.html';
+        }
+
+        // Função para carregar categorias
+        async function loadCategories() {
+            try {
+                const res = await fetch(`${API_URL}/produtos/categorias`);
+                if (!res.ok) throw new Error('Falha ao buscar categorias');
+                
+                const categorias = await res.json();
+                const select = document.getElementById('categoria_id');
+                
+                // Se não houver categorias no banco, avisa o usuário
+                if (categorias.length === 0) {
+                    select.innerHTML = '<option value="" disabled selected>Nenhuma categoria cadastrada no banco!</option>';
+                    return;
+                }
+
+                select.innerHTML = '<option value="" disabled selected>Selecione uma Categoria</option>';
+                categorias.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.innerText = cat.nome;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error(err);
+                document.getElementById('categoria_id').innerHTML = '<option>Erro ao carregar</option>';
+            }
+        }
+
+        // Cadastrar Produto
+        document.getElementById('createProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const body = {
+                nome: document.getElementById('nome').value,
+                descricao: document.getElementById('descricao').value, // Pega valor do textarea
+                preco: document.getElementById('preco').value,
+                estoque: document.getElementById('estoque').value,
+                categoria_id: document.getElementById('categoria_id').value,
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/produtos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                if(!res.ok) throw new Error('Erro ao criar produto');
+                
+                alert('Produto criado com sucesso!');
+                document.getElementById('createProductForm').reset();
+                loadCategories(); // Reseta o select
+                loadMyProducts(); 
+            } catch(err) {
+                alert(err.message);
+            }
+        });
+
+        async function loadMyProducts() {
+            try {
+                const res = await fetch(`${API_URL}/produtos`);
+                const produtos = await res.json();
+                const div = document.getElementById('my-products');
+                div.innerHTML = '';
+
+                produtos.forEach(p => {
+                    div.innerHTML += `
+                        <div class="product-card">
+                            <h3>${p.nome}</h3>
+                            <p><b>Categoria:</b> ${p.categoria}</p>
+                            <p style="font-size:0.9em; color:#666;">${p.descricao || 'Sem descrição'}</p>
+                            <p>Preço: R$ ${p.preco}</p>
+                            <div style="margin-top:10px; border-top:1px solid #ccc; padding-top:5px;">
+                                <label>Novo Preço:</label>
+                                <input type="number" step="0.01" id="price-${p.id}" placeholder="0.00" style="width: 80px;">
+                                <button class="secondary" onclick="updatePrice(${p.id})">Atualizar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function updatePrice(id) {
+            const novoPreco = document.getElementById(`price-${id}`).value;
+            if(!novoPreco) return alert('Digite um valor');
+
+            try {
+                const res = await fetch(`${API_URL}/produtos/preco/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ novoPreco })
+                });
+                if(!res.ok) throw new Error('Erro ao atualizar');
+                alert('Preço atualizado!');
+                loadMyProducts();
+            } catch(err) { alert(err.message); }
+        }
+
+        loadCategories();
+        loadMyProducts();
+    </script>
+</body>
+
+</html>

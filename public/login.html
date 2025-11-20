@@ -2,18 +2,30 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login - Marketplace</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <h2>Login</h2>
-    <form id="loginForm">
-        <input type="email" id="email" placeholder="Email" required><br>
-        <input type="password" id="senha" placeholder="Senha" required><br>
-        <button type="submit">Entrar</button>
-    </form>
-    <div id="message"></div>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh;">
+    <div class="card" style="width: 350px;">
+        <h2 style="text-align:center;">Acesso ao Sistema</h2>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Seu E-mail" required>
+            <input type="password" id="senha" placeholder="Sua Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+        <div id="message" class="error"></div>
+        <hr>
+        <p style="text-align:center;">
+            Não tem conta? <a href="registro.html">Registre-se AQUI</a>
+        </p>
+        <p style="text-align:center; font-size: 0.8em;">
+            <a href="registro-vendedor.html">É um vendedor? Registre-se AQUI!</a>
+        </p>
+    </div>
 
     <script>
+        const API_URL = 'http://localhost:3000/api';
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -21,24 +33,25 @@
             const msgDiv = document.getElementById('message');
 
             try {
-                const res = await fetch('http://localhost:3000/api/auth/login', {
+                const res = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, senha })
                 });
 
                 const data = await res.json();
-
                 if (!res.ok) throw new Error(data.error);
 
                 localStorage.setItem('authToken', data.token);
                 localStorage.setItem('userGrupo', data.grupo);
+                localStorage.setItem('userId', data.userId);
+                // Simulando nome pois o login não retorna nome, apenas token/grupo
+                localStorage.setItem('userName', email.split('@')[0]); 
 
-                msgDiv.innerText = 'Login com sucesso! Redirecionando...';
                 window.location.href = 'index.html';
 
             } catch (err) {
-                msgDiv.innerText = `Erro: ${err.message}`;
+                msgDiv.innerText = err.message;
             }
         });
     </script>

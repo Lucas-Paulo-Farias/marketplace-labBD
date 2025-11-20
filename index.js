@@ -7,6 +7,7 @@ const orderRoutes = require('./src/routes/orderRoutes');
 
 const app = express();
 app.use(express.json());
+app.use(express.static('public'));
 
 // Rota de "saúde"
 app.get('/', (req, res) => {

@@ -1,4 +1,7 @@
 const prisma = require('../lib/prismaClient');
+const redis = require('../lib/redisClient');
+
+const CACHE_KEY_PRODUTOS = 'produtos:all';
 
 exports.createOrder = async (req, res) => {
   const compradorId = req.user.userId;
@@ -55,6 +58,8 @@ exports.createOrder = async (req, res) => {
 
       return novoPedido;
     });
+
+    await redis.del(CACHE_KEY_PRODUTOS);
 
     res.status(201).json(resultado);
 

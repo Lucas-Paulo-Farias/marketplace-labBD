@@ -6,6 +6,8 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 // Rota pública
 router.get('/', productController.getAllProducts);
 
+router.get('/categorias', productController.getAllCategories);
+
 // Rota privada
 // Apenas 'VENDEDOR' pode criar produto
 router.post(

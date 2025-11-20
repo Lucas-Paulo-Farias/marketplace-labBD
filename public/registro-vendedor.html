@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Vendedor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh;">
+    <div class="card" style="width: 350px; border-top: 5px solid #8e44ad;">
+        <h2 style="text-align:center;">Novo Vendedor</h2>
+        <p style="text-align:center; font-size: 0.9em; color: #666;">
+            Este cadastro executa uma <b>Stored Procedure</b> no banco de dados.
+        </p>
+        
+        <form id="registerVendedorForm">
+            <input type="text" id="nome" placeholder="Nome da Loja/Vendedor" required>
+            <input type="email" id="email" placeholder="E-mail Comercial" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit" style="background-color: #8e44ad;">Registrar Vendedor</button>
+        </form>
+
+        <div id="message" style="text-align:center; margin-top:10px;"></div>
+        <hr>
+        <p style="text-align:center;"><a href="login.html">Voltar para Login</a></p>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        document.getElementById('registerVendedorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const msgDiv = document.getElementById('message');
+
+            msgDiv.innerText = 'Processando...';
+            msgDiv.className = '';
+
+            try {
+                // Chama a rota específica que usa a Procedure sp_registrar_novo_vendedor
+                const res = await fetch(`${API_URL}/auth/registrar-vendedor`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, email, senha })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+                
+                msgDiv.innerText = 'Vendedor registrado com sucesso!';
+                msgDiv.className = 'success';
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+
+            } catch (err) {
+                msgDiv.innerText = err.message;
+                msgDiv.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

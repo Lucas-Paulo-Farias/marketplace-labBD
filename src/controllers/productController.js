@@ -62,3 +62,13 @@ exports.updateProductPrice = async (req, res) => {
   });
 }
 };
+
+exports.getAllCategories = async (req, res) => {
+  try {
+    const categorias = await prisma.categoria.findMany();
+    res.json(categorias);
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error);
+    res.status(500).json({ error: 'Erro ao buscar categorias.' });
+  }
+};

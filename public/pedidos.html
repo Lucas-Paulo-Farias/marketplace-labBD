@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Pedidos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav id="navbar"></nav>
+    <div class="container">
+        <h1>Meus Pedidos</h1>
+        <div id="orders-list"></div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        checkAuth();
+        setupNav();
+
+        async function loadOrders() {
+            try {
+                const res = await fetch(`${API_URL}/pedidos`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const pedidos = await res.json();
+                
+                const div = document.getElementById('orders-list');
+                if(pedidos.length === 0) {
+                    div.innerHTML = '<p>Você ainda não fez pedidos.</p>';
+                    return;
+                }
+
+                pedidos.forEach(p => {
+                    div.innerHTML += `
+                        <div class="card">
+                            <div style="display:flex; justify-content:space-between;">
+                                <h3>Pedido: ${p.pedido_id}</h3>
+                                <span style="color:blue; font-weight:bold;">${p.status}</span>
+                            </div>
+                            <p>Data: ${new Date(p.data_pedido).toLocaleString()}</p>
+                            <p>Total de Itens: ${p.total_itens}</p>
+                            <p class="price">Valor Total: R$ ${parseFloat(p.valor_total).toFixed(2)}</p>
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao carregar pedidos.');
+            }
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>
