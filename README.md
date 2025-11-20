@@ -116,8 +116,6 @@ REDIS_URL="redis://localhost:6379"
 
 ---
 
----
-
 ## 🚀 Executando o Servidor
 
 Com o MySQL e o Redis rodando e o `.env` configurado, inicie o servidor:
