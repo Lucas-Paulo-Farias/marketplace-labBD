@@ -1,5 +1,5 @@
 -- Script completo do banco para o Marketplace DB-LAB
--- Executar no MySQL Workbench como usuário com permissão (ex.: root), depois usar apenas o usuário de aplicação.
+
 
 -- 1) Banco e usuário da aplicação (senha: trabalho)
 CREATE DATABASE IF NOT EXISTS marketplace_db;
