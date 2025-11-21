@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabela Grupos
+model GrupoUsuario {
+  id     Int       @id @default(autoincrement())
+  nome   String    @unique
+  usuarios Usuario[]
+}
+
+// Tabela Usuários
+model Usuario {
+  id         String        @id @default(uuid())
+  nome       String
+  email      String        @unique
+  senha_hash String
+  grupo_id   Int
+  grupo      GrupoUsuario  @relation(fields: [grupo_id], references: [id])
+
+  produtos_venda Produto[] @relation("VendedorProdutos")
+  pedidos_compra Pedido[]  @relation("CompradorPedidos")
+
+  @@index([grupo_id])
+}
+
+model Categoria {
+  id       Int       @id @default(autoincrement())
+  nome     String    @unique
+  produtos Produto[]
+}
+
+model Produto {
+  id          Int       @id @default(autoincrement())
+  nome        String
+  descricao   String?   @db.Text
+  preco       Decimal   @db.Decimal(10, 2)
+  estoque     Int
+
+  vendedor_id String
+  vendedor    Usuario   @relation("VendedorProdutos", fields: [vendedor_id], references: [id])
+
+  categoria_id Int
+  categoria    Categoria @relation(fields: [categoria_id], references: [id])
+
+  itensPedido ItensPedido[]
+
+  @@index([nome])
+  @@index([vendedor_id])
+  @@index([categoria_id])
+}
+
+model Pedido {
+  id            String    @id
+  data_pedido   DateTime  @default(now())
+  status        String    @default("PENDENTE")
+
+  comprador_id  String
+  comprador     Usuario   @relation("CompradorPedidos", fields: [comprador_id], references: [id])
+
+  itens         ItensPedido[]
+
+  @@index([comprador_id])
+}
+
+model ItensPedido {
+  id              Int     @id @default(autoincrement())
+  quantidade      Int
+  preco_unitario  Decimal @db.Decimal(10, 2)
+
+  pedido_id       String
+  pedido          Pedido  @relation(fields: [pedido_id], references: [id])
+
+  produto_id      Int
+  produto         Produto @relation(fields: [produto_id], references: [id])
+
+  @@index([pedido_id])
+  @@index([produto_id])
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Loja - Marketplace</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .qtd-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .qtd-input {
+            width: 70px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navbar"></nav>
+
+    <div class="container">
+        <h1>Produtos Disponíveis</h1>
+        <p></p>
+        <div id="loading">Carregando produtos...</div>
+        <div id="produtos" class="grid"></div>
+    </div>
+
+    <div id="cart-summary" onclick="checkout()" style="display:none;">🛒 0 itens</div>
+
+    <script src="app.js"></script>
+    <script>
+        checkAuth();
+        setupNav();
+
+        async function loadProducts() {
+            try {
+                // Faz a requisição. 1ª vez = Banco, 2ª vez = Redis
+                const res = await fetch(`${API_URL}/produtos`);
+                const produtos = await res.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                const produtosDiv = document.getElementById('produtos');
+                produtosDiv.innerHTML = '';
+
+                produtos.forEach(p => {
+                    produtosDiv.innerHTML += `
+                        <div class="product-card">
+                            <div>
+                                <h3>${p.nome}</h3>
+                                <small>${p.categoria} | Vend: ${p.vendedor}</small>
+                                <p>${p.descricao || 'Sem descrição'}</p>
+                            </div>
+                            <div>
+                                <div class="price">R$ ${p.preco}</div>
+                                <small>Estoque: ${p.estoque}</small> <br><br>
+                                ${p.estoque > 0 
+                                    ? `
+                                    <div class="qtd-container">
+                                        <label>Qtd:</label>
+                                        <input type="number" id="qtd-${p.id}" class="qtd-input" value="1" min="1" max="${p.estoque}">
+                                    </div>
+                                    <button onclick='addToCart(${JSON.stringify(p)})'>Adicionar ao Carrinho</button>
+                                    ` 
+                                    : `<button disabled style="background:#ccc">Esgotado</button>`}
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                document.getElementById('loading').innerText = 'Erro ao carregar: ' + err.message;
+            }
+        }
+
+        function checkout() {
+            window.location.href = 'carrinho.html';
+        }
+
+        loadProducts();
+        updateCartUI();
+    </script>
+</body>
+</html>

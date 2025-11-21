@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Carrinho</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav id="navbar"></nav>
+    <div class="container">
+        <h1>Finalizar Pedido</h1>
+        <div class="card">
+            <div id="cart-items"></div>
+            <h3 id="total-price" style="text-align:right">Total: R$ 0.00</h3>
+            <button onclick="finalizarPedido()" style="width:100%; margin-top:20px; font-size:1.2rem;">Confirmar Compra</button>
+            <button onclick="limparCarrinho()" class="secondary" style="width:100%; margin-top:10px;">Limpar Carrinho</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        checkAuth();
+        setupNav();
+
+        function renderCart() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const div = document.getElementById('cart-items');
+            div.innerHTML = '';
+            let total = 0;
+
+            if(cart.length === 0) {
+                div.innerHTML = '<p>Seu carrinho está vazio.</p>';
+                return;
+            }
+
+            cart.forEach(item => {
+                const subtotal = item.preco * item.quantidade;
+                total += subtotal;
+                div.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px;">
+                        <span><b>${item.nome}</b> (x${item.quantidade})</span>
+                        <span>R$ ${subtotal.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('total-price').innerText = 'Total: R$ ' + total.toFixed(2);
+        }
+
+        async function finalizarPedido() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (cart.length === 0) return alert('Carrinho vazio!');
+
+            // Transforma formato do carrinho para o formato da API
+            const itensAPI = cart.map(item => ({
+                produto_id: item.id,
+                quantidade: item.quantidade
+            }));
+
+            try {
+                const res = await fetch(`${API_URL}/pedidos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getToken()}`
+                    },
+                    body: JSON.stringify({ itens: itensAPI })
+                });
+
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || result.details);
+
+                alert('Pedido realizado com sucesso!');
+                localStorage.removeItem('cart');
+                window.location.href = 'pedidos.html';
+
+            } catch (err) {
+                alert('Erro no pedido: Logue como comprador, para realizar compras!');
+            }
+        }
+
+        function limparCarrinho() {
+            localStorage.removeItem('cart');
+            renderCart();
+            updateCartUI();
+        }
+
+        renderCart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Comprador</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh;">
+    <div class="card" style="width: 350px;">
+        <h2 style="text-align:center;">Novo Comprador</h2>
+        <form id="registerForm">
+            <input type="text" id="nome" placeholder="Nome Completo" required>
+            <input type="email" id="email" placeholder="E-mail" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit" class="secondary">Registrar</button>
+        </form>
+        <div id="message"></div>
+        <p style="text-align:center;"><a href="login.html">Voltar para Login</a></p>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            
+            try {
+                const res = await fetch('https://marketplace-labbd.onrender.com/api/auth/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, email, senha })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                
+                alert('Registrado com sucesso! Faça login.');
+                window.location.href = 'login.html';
+            } catch (err) {
+                document.getElementById('message').innerText = err.message;
+                document.getElementById('message').className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "marketplace-labbd",
+  "version": "1.0.0",
+  "description": "Sistema de marketplace criado para a materia de Laboratorio de Banco de Dados",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "prisma:migrate": "dotenv -e .env -- npx prisma migrate dev",
+    "prisma:studio": "dotenv -e .env -- npx prisma studio",
+    "prisma:generate": "dotenv -e .env -- npx prisma generate"
+  },
+  "repository": {
+    "type": "git",
+    "url": "C:/Users/lucas/Desktop/marketplace-labBD/.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "ioredis": "^5.8.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "nodemon": "^3.1.11",
+    "prisma": "^6.19.0"
+  }
+}
