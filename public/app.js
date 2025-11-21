@@ -1,5 +1,4 @@
-// m/public/js/app.js
-const API_URL = 'https://marketplace-labbd.onrender.com/api';
+const API_URL = 'http://localhost:3000/api';
 
 function getToken() { return localStorage.getItem('authToken'); }
 function getGroup() { return localStorage.getItem('userGrupo'); }

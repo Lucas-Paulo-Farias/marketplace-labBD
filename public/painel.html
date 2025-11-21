@@ -46,7 +46,6 @@
             window.location.href = 'index.html';
         }
 
-        // Função para carregar categorias
         async function loadCategories() {
             try {
                 const res = await fetch(`${API_URL}/produtos/categorias`);
@@ -54,8 +53,7 @@
                 
                 const categorias = await res.json();
                 const select = document.getElementById('categoria_id');
-                
-                // Se não houver categorias no banco, avisa o usuário
+
                 if (categorias.length === 0) {
                     select.innerHTML = '<option value="" disabled selected>Nenhuma categoria cadastrada no banco!</option>';
                     return;
@@ -74,13 +72,12 @@
             }
         }
 
-        // Cadastrar Produto
         document.getElementById('createProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const body = {
                 nome: document.getElementById('nome').value,
-                descricao: document.getElementById('descricao').value, // Pega valor do textarea
+                descricao: document.getElementById('descricao').value,
                 preco: document.getElementById('preco').value,
                 estoque: document.getElementById('estoque').value,
                 categoria_id: document.getElementById('categoria_id').value,
@@ -99,7 +96,7 @@
                 
                 alert('Produto criado com sucesso!');
                 document.getElementById('createProductForm').reset();
-                loadCategories(); // Reseta o select
+                loadCategories();
                 loadMyProducts(); 
             } catch(err) {
                 alert(err.message);

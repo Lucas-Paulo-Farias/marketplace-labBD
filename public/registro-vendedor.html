@@ -25,7 +25,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://marketplace-labbd.onrender.com/api';
+        const API_URL = 'http://localhost:3000/api';
 
         document.getElementById('registerVendedorForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -38,7 +38,6 @@
             msgDiv.className = '';
 
             try {
-                // Chama a rota específica que usa a Procedure sp_registrar_novo_vendedor
                 const res = await fetch(`${API_URL}/auth/registrar-vendedor`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

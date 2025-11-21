@@ -37,7 +37,6 @@
 
         async function loadProducts() {
             try {
-                // Faz a requisição. 1ª vez = Banco, 2ª vez = Redis
                 const res = await fetch(`${API_URL}/produtos`);
                 const produtos = await res.json();
                 
